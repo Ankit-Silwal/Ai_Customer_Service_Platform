@@ -36,3 +36,11 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Relay local settings and browser artifacts
+.env.platform
+.env.platform.test
+.playwright/
+test-results/
+playwright-report/
+.platform-logs/
