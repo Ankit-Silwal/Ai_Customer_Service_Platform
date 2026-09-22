@@ -1,0 +1,1 @@
+{ "extends": "../../tsconfig.platform.json", "include": ["src"] }
