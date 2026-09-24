@@ -1,4 +1,4 @@
-﻿name: Relay platform
+name: Relay platform
 on:
   push:
     branches: [main]
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "24.11.0"
           cache: npm
       - name: Install active platform workspaces
         run: npm ci --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui --include-workspace-root=true
@@ -60,8 +60,8 @@ jobs:
           PLAYWRIGHT_CHANNEL: chromium
         run: npm run test:e2e --workspace @relay/web
       - name: Service diagnostics
-        if: failure()
+        if: failure() && hashFiles('.env.platform') != ''
         run: docker compose --env-file .env.platform -f compose.platform.yml logs --tail 80
       - name: Stop services
-        if: always()
+        if: always() && hashFiles('.env.platform') != ''
         run: docker compose --env-file .env.platform -f compose.platform.yml down
