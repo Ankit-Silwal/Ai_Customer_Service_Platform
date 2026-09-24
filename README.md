@@ -14,6 +14,17 @@ A company workspace for document-based support. Upload knowledge, test your assi
 
 Without an AI key the assistant returns clearly labelled source excerpts. Add `AI_API_KEY` in the server environment for generated answers and embeddings. No provider secrets are sent to the browser.
 
+## Run everything in Docker
+
+Requires Docker Desktop.
+
+```sh
+node scripts/setup-platform.mjs
+docker compose --env-file .env.platform -f compose.platform.yml up --build -d
+```
+
+Open **http://localhost:3000**. The migration runs automatically before the services start. Database and document files persist in named volumes. `npm run platform:up` and `npm run platform:down` are equivalent shortcuts after installing dependencies. Stopping the stack keeps its volumes.
+
 ## Run locally
 
 Requires Node.js 24+, npm and Docker.
@@ -57,6 +68,8 @@ npm run test --workspace @relay/server
 npm run test --workspace @relay/api
 npm run test:e2e --workspace @relay/web
 ```
+
+GitHub Actions builds the full Docker stack and runs lint, type checks, unit, API, PDF ingestion, takeover-race and browser tests.
 
 Integration and browser tests require running services and create test workspaces. Browser tests use installed Chrome by default (`PLAYWRIGHT_CHANNEL=msedge` is also supported). Test artifacts and credentials stay ignored. Registration is rate limited to five requests per hour per IP, so use a dedicated development environment for repeated registration tests.
 

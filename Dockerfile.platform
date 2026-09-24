@@ -1,0 +1,22 @@
+FROM node:24.11.0-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/knowledge/package.json apps/knowledge/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/server/package.json packages/server/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+RUN npm ci --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --include-workspace-root=false
+COPY tsconfig.platform.json ./
+COPY apps/api apps/api
+COPY apps/knowledge apps/knowledge
+COPY apps/worker apps/worker
+COPY packages/server packages/server
+COPY packages/contracts packages/contracts
+FROM node:24.11.0-bookworm-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build --chown=node:node /app /app
+USER node
+EXPOSE 4100 4101
+CMD ["npm","run","start","--workspace","@relay/api"]

@@ -1,0 +1,67 @@
+﻿name: Relay platform
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - "apps/knowledge/**"
+      - "apps/worker/**"
+      - "apps/web/**"
+      - "packages/server/**"
+      - "packages/contracts/**"
+      - "packages/ui/**"
+      - "package*.json"
+      - "*platform*"
+      - "Dockerfile.*"
+      - "deploy/**"
+      - ".github/workflows/platform.yml"
+  pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "package*.json"
+      - "*platform*"
+      - "Dockerfile.*"
+      - "deploy/**"
+      - ".github/workflows/platform.yml"
+permissions:
+  contents: read
+concurrency:
+  group: relay-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install active platform workspaces
+        run: npm ci --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui --include-workspace-root=true
+      - name: Lint and check types
+        run: |
+          npm run lint --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
+          npm run check-types --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
+      - name: Unit tests
+        run: npm run test --workspace @relay/server
+      - name: Build and start all services
+        run: |
+          npm run platform:setup
+          docker compose --env-file .env.platform -f compose.platform.yml up --build -d --wait
+      - name: API, PDF, and takeover race tests
+        run: npm run test --workspace @relay/api
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Customer and agent browser flow
+        env:
+          PLAYWRIGHT_CHANNEL: chromium
+        run: npm run test:e2e --workspace @relay/web
+      - name: Service diagnostics
+        if: failure()
+        run: docker compose --env-file .env.platform -f compose.platform.yml logs --tail 80
+      - name: Stop services
+        if: always()
+        run: docker compose --env-file .env.platform -f compose.platform.yml down

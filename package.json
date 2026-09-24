@@ -9,7 +9,9 @@
     "check-types": "turbo run check-types",
     "platform:setup": "node scripts/setup-platform.mjs",
     "platform:infra": "docker compose --env-file .env.platform -f compose.infra.yml up -d",
-    "dev:platform": "node scripts/dev-platform.mjs"
+    "dev:platform": "node scripts/dev-platform.mjs",
+    "platform:up": "docker compose --env-file .env.platform -f compose.platform.yml up --build -d",
+    "platform:down": "docker compose --env-file .env.platform -f compose.platform.yml down"
   },
   "devDependencies": {
     "@babel/core": "8.0.1",
@@ -23,7 +25,7 @@
     "typescript": "7.0.2"
   },
   "engines": {
-    "node": "\u003e=24"
+    "node": ">=24"
   },
   "devEngines": {
     "packageManager": {

@@ -1,6 +1,6 @@
 ﻿# Relay service architecture
 
-Relay is an npm-workspaces application with independently runnable gateway, knowledge service, and ingestion worker. The web client arrives in the next milestone.
+Relay is an npm-workspaces application with independently runnable gateway, knowledge service, and ingestion worker. The React web client provides the dashboard, playground, published customer chat, and agent inbox.
 
 ## Run the backend
 
