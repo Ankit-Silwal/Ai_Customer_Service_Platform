@@ -31,4 +31,15 @@ export default [
       "no-control-regex": "off",
     },
   },
+  {
+    files: ["**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        babelOptions: {
+          presets: ["@babel/preset-typescript"],
+          plugins: ["@babel/plugin-syntax-jsx"],
+        },
+      },
+    },
+  },
 ];

@@ -122,13 +122,13 @@ app.post("/answer", async (req, res) => {
   const vector = vectors?.[0] ? JSON.stringify(vectors[0]) : null;
   const result = await pool.query(
     `SELECT c.document_id AS "documentId", d.name, c.page, c.content AS excerpt,
-    ts_rank_cd(to_tsvector('english',c.content),plainto_tsquery('english',$3)) AS lexical,
+    ts_rank_cd(to_tsvector('english',c.content),to_tsquery('english', array_to_string(tsvector_to_array(to_tsvector('english',$3)), ' | '))) AS lexical,
     CASE WHEN c.embedding IS NOT NULL AND $4::vector IS NOT NULL THEN 1-(c.embedding <=> $4::vector) ELSE 0 END AS similarity
     FROM chunks c JOIN documents d ON d.id=c.document_id
     WHERE c.organization_id=$1 AND c.bot_id=$2 AND d.status='ready'
-    AND (to_tsvector('english',c.content) @@ plainto_tsquery('english',$3)
+    AND (to_tsvector('english',c.content) @@ to_tsquery('english', array_to_string(tsvector_to_array(to_tsvector('english',$3)), ' | '))
     OR (c.embedding IS NOT NULL AND $4::vector IS NOT NULL AND (c.embedding <=> $4::vector)<0.65))
-    ORDER BY (ts_rank_cd(to_tsvector('english',c.content),plainto_tsquery('english',$3)) +
+    ORDER BY (ts_rank_cd(to_tsvector('english',c.content),to_tsquery('english', array_to_string(tsvector_to_array(to_tsvector('english',$3)), ' | '))) +
     CASE WHEN c.embedding IS NOT NULL AND $4::vector IS NOT NULL THEN 1-(c.embedding <=> $4::vector) ELSE 0 END) DESC LIMIT 4`,
     [scope.organizationId, scope.botId, input.question, vector],
   );

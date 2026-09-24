@@ -1,159 +1,63 @@
-# Turborepo starter
+﻿# Relay — AI customer support, with a human touch
 
-This Turborepo starter is maintained by the Turborepo core team.
+A company workspace for document-based support. Upload knowledge, test your assistant on this website, publish a customer chat page, and let a real teammate join the same conversation.
 
-## Using this example
+## What works
 
-Run the following command:
+- Email/password accounts and organization-scoped owner, admin, agent and viewer access.
+- Multiple assistants with separate knowledge and conversations.
+- Private PDF, TXT and Markdown uploads, asynchronous processing, status, retry and deletion.
+- Hybrid lexical/vector retrieval, source citations and an OpenAI-compatible AI provider.
+- A built-in playground and shareable customer chat page.
+- A team inbox with human takeover, agent replies, return to AI and resolution.
+- Responsive dashboard and customer chat, bundled fonts and accessible dialogs.
 
-```sh
-npx create-turbo@latest
-```
+Without an AI key the assistant returns clearly labelled source excerpts. Add `AI_API_KEY` in the server environment for generated answers and embeddings. No provider secrets are sent to the browser.
 
-## What's inside?
+## Run locally
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Requires Node.js 24+, npm and Docker.
 
 ```sh
-cd my-turborepo
-turbo build
+npm install
+npm run platform:setup
+npm run platform:infra
+npm run dev:platform
 ```
 
-Without global `turbo`, use your package manager:
+Open **http://localhost:3000**, create an account and use **Knowledge base → Add sample knowledge** or upload your own document. Wait for Ready, then ask a question in Playground.
+
+To test a real person joining: request a person in the chat, open Team inbox, select the conversation and click Join conversation. To test as a customer in a separate browser, publish the bot in Bot settings and open its customer chat link. That link is public; conversation history is private to its visitor and authorized teammates.
+
+Local settings are in ignored `.env.platform`. Setup generates random credentials and preserves existing valid settings. The pre-existing identity-service workspace and its Compose configuration are separate from Relay.
+
+## Services
+
+| Workspace            | Responsibility                                                   |
+| -------------------- | ---------------------------------------------------------------- |
+| `apps/web`           | React dashboard, playground, customer chat and agent inbox       |
+| `apps/api`           | Gateway, accounts, tenant authorization and conversation control |
+| `apps/knowledge`     | Private uploads, retrieval and model responses                   |
+| `apps/worker`        | Background text extraction, chunks and embeddings                |
+| `packages/contracts` | Shared Zod schemas and DTOs                                      |
+| `packages/server`    | Server-only database, AI, storage and security adapters          |
+| `packages/ui`        | Reusable UI primitives                                           |
+
+PostgreSQL with pgvector stores metadata, passages, sessions and conversations. Private object storage holds original files. The database also provides durable jobs with leases/retries. Services run independently; this initial deployment shares a database.
+
+See [architecture, API and operational limits](docs-platform.md) and [local infrastructure](docs-infrastructure.md).
+
+## Verify
 
 ```sh
-cd my-turborepo
-npx turbo build
-npm exec turbo build
-npm exec turbo build
+npm run check-types --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
+npm run lint --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
+npm run build --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker
+npm run test --workspace @relay/server
+npm run test --workspace @relay/api
+npm run test:e2e --workspace @relay/web
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Integration and browser tests require running services and create test workspaces. Browser tests use installed Chrome by default (`PLAYWRIGHT_CHANNEL=msedge` is also supported). Test artifacts and credentials stay ignored. Registration is rate limited to five requests per hour per IP, so use a dedicated development environment for repeated registration tests.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+The local MVP does not yet include malware scanning, OCR, password recovery, email verification, billing, or production operational hardening. Scanned PDFs are rejected with a clear message. Review the deployment limits before using real customer data publicly.
