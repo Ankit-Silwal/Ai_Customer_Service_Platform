@@ -1,4 +1,5 @@
 import { z } from "zod";
+export * from "./delivery.ts";
 
 export const idSchema = z.uuid();
 export const registerSchema = z.object({

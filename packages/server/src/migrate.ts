@@ -5,19 +5,22 @@ await transaction(async (client) => {
   await client.query(
     "CREATE TABLE IF NOT EXISTS schema_migrations(name text PRIMARY KEY, applied_at timestamptz DEFAULT now())",
   );
-  const found = await client.query(
-    "SELECT name FROM schema_migrations WHERE name='001_platform'",
-  );
-  if (!found.rowCount) {
-    await client.query(
-      await readFile(
-        new URL("../migrations/001_platform.sql", import.meta.url),
-        "utf8",
-      ),
+  for (const name of ["001_platform", "002_delivery"]) {
+    const found = await client.query(
+      "SELECT name FROM schema_migrations WHERE name=$1",
+      [name],
     );
-    await client.query(
-      "INSERT INTO schema_migrations(name) VALUES('001_platform')",
-    );
+    if (!found.rowCount) {
+      await client.query(
+        await readFile(
+          new URL(`../migrations/${name}.sql`, import.meta.url),
+          "utf8",
+        ),
+      );
+      await client.query("INSERT INTO schema_migrations(name) VALUES($1)", [
+        name,
+      ]);
+    }
   }
 });
 console.log("Platform migrations applied.");
