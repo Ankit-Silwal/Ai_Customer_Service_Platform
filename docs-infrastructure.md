@@ -6,7 +6,7 @@ This adds isolated local infrastructure for the customer-support platform. It pr
 
 ```sh
 node scripts/setup-platform.mjs
-docker compose --env-file .env.platform -f compose.infra.yml up -d
+docker compose --env-file .env.platform -f compose.infra.yml up --build -d
 ```
 
 The setup command creates ignored `.env.platform` settings with random database, storage, and service credentials. Existing valid settings are preserved. Never commit that file.
@@ -25,6 +25,8 @@ docker compose --env-file .env.platform -f compose.infra.yml ps
 docker compose --env-file .env.platform -f compose.infra.yml exec postgres pg_isready -U relay -d relay
 ```
 
-The platform services and dashboard are delivered in subsequent commits. The backend milestone will add tenant-scoped records, document indexing, conversations, messages, sessions, usage, and audit events.
+The full `compose.platform.yml` stack also starts the API, knowledge service, document worker and web application, with a one-shot migration before application startup.
 
-MinIO uses its upstream Quay registry because its Docker Hub image is unavailable. This pinned image is for local development. Production should use a maintained private S3-compatible service, TLS, managed secrets, backups, malware scanning, and independent service credentials.
+MinIO community container images are no longer publicly pullable. `Dockerfile.storage` builds the official [source-only distribution](https://github.com/minio/minio#source-only-distribution) at release `RELEASE.2025-10-15T17-29-55Z`, immutable commit `9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a`. It includes the upstream AGPL license. The first build downloads Go dependencies and may take several minutes; later builds use Docker cache. Go checks module integrity through the upstream go.sum. No third-party mirror or registry credentials are required.
+
+The existing named storage volume and root UID remain compatible with the previous local container. Back up development volumes before changing storage versions; do not delete volumes to fix a startup problem. This archived community source build is a local/demo dependency, not a maintained production storage service. Production should use maintained private S3-compatible storage, TLS, managed secrets, backups, malware scanning, and independent service credentials.

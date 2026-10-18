@@ -29,7 +29,11 @@ services:
       retries: 10
     restart: unless-stopped
   storage:
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    build:
+      context: .
+      dockerfile: Dockerfile.storage
+    image: relay-storage:2025-10-15
+    pull_policy: build
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${S3_ACCESS_KEY:?Set S3_ACCESS_KEY in .env.platform}

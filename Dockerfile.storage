@@ -1,0 +1,19 @@
+# MinIO community images are no longer distributed publicly. Build the upstream
+# source at RELEASE.2025-10-15T17-29-55Z, verifying its immutable commit.
+FROM golang:1.24.9-bookworm AS build
+WORKDIR /source
+RUN git init . && git remote add origin https://github.com/minio/minio.git \
+    && git fetch --depth 1 origin 9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a \
+    && git checkout --detach FETCH_HEAD \
+    && test "$(git rev-parse HEAD)" = "9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a"
+RUN CGO_ENABLED=0 go build -trimpath -o /minio .
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /minio /usr/local/bin/minio
+COPY --from=build /source/LICENSE /licenses/minio-LICENSE
+# Keep the previous storage container's UID for existing development volumes.
+# API, worker, and web production images continue to run as non-root users.
+EXPOSE 9000 9001
+ENTRYPOINT ["minio"]
+CMD ["server", "/data", "--console-address", ":9001"]
