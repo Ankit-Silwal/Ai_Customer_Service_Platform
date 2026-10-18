@@ -1,3 +1,4 @@
+import { delivery } from "./delivery.ts";
 import { z } from "zod";
 import { baseApp, errors, HttpError } from "@relay/server/http";
 import { config } from "@relay/server/config";
@@ -154,6 +155,7 @@ app.post("/api/public/conversations/:id/messages", (req, res) =>
 app.post("/api/public/conversations/:id/:action", (req, res) =>
   transition(req, res, true),
 );
+app.use("/api/delivery", delivery);
 app.use("/api", authenticated);
 app.get("/api/me", async (_req, res) => {
   const user = principal(res);

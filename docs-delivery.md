@@ -11,3 +11,19 @@ Migration `002_delivery` adds organization-owned stores, delivery memberships (a
 The policy PDF is `packages/server/assets/parcel-plate-refund-policy.pdf`. Regenerate with `python scripts/generate-delivery-policy.py` after installing `reportlab==4.4.3` and `pymupdf`. The script also checks extracted rule labels and renders a PNG into ignored `.platform-logs/pdf-preview` for visual QA. Keep PDF wording, executable rules and boundary tests in sync when changing policy.
 
 Migrations run through the existing `platform:up` startup or `node --env-file=.env.platform --import tsx packages/server/src/migrate.ts`. The migration ledger and advisory lock make repeat runs safe.
+
+## Delivery API milestone
+
+All paths start with `/api/delivery`. `GET /policy.pdf` serves the versioned demo PDF; `GET /stores/:storeId` returns public store metadata. `POST /stores/:storeId/register` creates a customer account with the normal hashed, expiring Relay session cookie. Existing users sign in normally and `POST /stores/:storeId/join`. Request bodies cannot select a privileged role.
+
+A Relay owner/admin calls `POST /setup` with `organizationId` to create one store and dedicated bot. `POST /stores/:storeId/policy` submits the PDF through the signed knowledge-service API; failed ingestion can be retried with the same endpoint. `POST /samples` creates three clearly simulated scenarios idempotently.
+
+Within `/stores/:storeId`: `GET /me`, `GET /orders`, `POST /orders`, `GET /members`, and `POST /members` power the role-specific views. Order creation accepts a UUID requestId, product IDs, quantities, address and instructions. Prices and the $3.50 delivery fee come from the server catalog, never client totals. All amounts are USD cents.
+
+`POST /orders/:orderId/status` accepts only the next fulfilment state. A worker claims an unassigned order by progressing it and cannot change another worker's assignment. Only an admin can cancel before dispatch. Worker lists omit refunds and conversation identifiers. Customer lists contain only their own orders. A worker cannot be demoted while assigned active deliveries remain.
+
+`POST /orders/:orderId/support` gives the order owner a visitor capability for the same tenant-scoped Relay conversation. Admins join through the existing protected conversation routes; no new chat implementation or weaker takeover path is introduced.
+
+`POST /orders/:orderId/refund` accepts a reason and details. It stores one deterministic assessment, then requests a cited explanation from the knowledge service. Model failure leaves the rule check usable. The UI labels no-key output as a source preview. Untrusted customer text and model output cannot change the eligibility/amount. `POST /orders/:orderId/refund/decision` accepts an admin decision and review note. Locks, unique constraints, bounded amounts, and audit events prevent duplicate simulated payments. The request-time policy and order facts define the recorded assessment. Unknown/active cases with no supported amount cannot be approved through this demo; the team can discuss them in chat.
+
+No new environment variables or dependencies are needed. The existing `AI_API_KEY` enables generated explanations; absent a key, policy retrieval is still demonstrable. Run `node --env-file=.env.platform --import tsx --test apps/api/test/delivery.test.ts` against running services for role, company isolation, server pricing, PDF retrieval, duplicate-decision and takeover checks.

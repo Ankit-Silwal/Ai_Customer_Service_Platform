@@ -1,4 +1,4 @@
-﻿"""Generate the versioned demo policy and a PNG for visual QA.
+"""Generate the versioned demo policy and a PNG for visual QA.
 Requires reportlab and pymupdf. Run from the repository root.
 """
 from pathlib import Path
@@ -66,4 +66,3 @@ for key in ['R1','R2','R3','R4','R5','24 hours','30 minutes']:
     assert key in page.get_text(), key
 page.get_pixmap(matrix=fitz.Matrix(1.5,1.5)).save(str(qa/'policy.png'))
 print('Policy PDF generated; text and page-count checks passed.')
-
