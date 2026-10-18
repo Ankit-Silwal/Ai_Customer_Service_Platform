@@ -265,6 +265,15 @@ export default function App() {
             ))}
         </nav>
         <div className="sidebar-bottom">
+          <a className="delivery-demo-link" href="/delivery">
+            <span>
+              <Sparkles size={18} /> BUILT WITH RELAY
+            </span>
+            <strong>
+              Meet Parcel &amp; Plate <ArrowRight size={17} />
+            </strong>
+            <small>Explore the delivery + support demo</small>
+          </a>
           <div className="sidebar-note">
             <span className="note-icon">
               <Sparkles size={19} />

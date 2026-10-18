@@ -1,16 +1,21 @@
-﻿"use client";
-import { useEffect, useRef, type ReactNode } from "react";
+"use client";
+import { useEffect, useRef, useId, type ReactNode } from "react";
 /** Native modal semantics include focus trapping, Escape, and focus restoration. */
 export function Dialog({
   labelledBy,
+  title,
+  className = "",
   onClose,
   children,
 }: {
-  labelledBy: string;
+  labelledBy?: string;
+  title?: string;
+  className?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
@@ -19,8 +24,8 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className="modal"
-      aria-labelledby={labelledBy}
+      className={"modal " + className}
+      aria-labelledby={labelledBy ?? titleId}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -38,6 +43,14 @@ export function Dialog({
         }
       }}
     >
+      {title && (
+        <div className="dialog-heading">
+          <h2 id={titleId}>{title}</h2>
+          <button type="button" aria-label="Close dialog" onClick={onClose}>
+            ×
+          </button>
+        </div>
+      )}
       {children}
     </dialog>
   );

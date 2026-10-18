@@ -74,3 +74,9 @@ GitHub Actions builds the full Docker stack and runs lint, type checks, unit, AP
 Integration and browser tests require running services and create test workspaces. Browser tests use installed Chrome by default (`PLAYWRIGHT_CHANNEL=msedge` is also supported). Test artifacts and credentials stay ignored. Registration is rate limited to five requests per hour per IP, so use a dedicated development environment for repeated registration tests.
 
 The local MVP does not yet include malware scanning, OCR, password recovery, email verification, billing, or production operational hardening. Scanned PDFs are rejected with a clear message. Review the deployment limits before using real customer data publicly.
+
+## Parcel & Plate delivery example
+
+Open **http://localhost:3000/delivery** and choose a Relay workspace to launch the connected delivery demo. **Prepare demo** loads sample orders and ingests the included refund-policy PDF. Customers can browse, order, track deliveries, request refund checks, and ask for a person. Workers handle dispatch; administrators review refunds and join the same customer chat.
+
+Use separate browser profiles to try different roles. No actual payments occur. See [delivery setup, roles, policy and API](docs-delivery.md).
