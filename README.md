@@ -25,6 +25,10 @@ docker compose --env-file .env.platform -f compose.platform.yml up --build -d
 
 Open **http://localhost:3000**. The migration runs automatically before the services start. Database and document files persist in named volumes. `npm run platform:up` and `npm run platform:down` are equivalent shortcuts after installing dependencies. Stopping the stack keeps its volumes.
 
+`npm run platform:up` also completes missing environment settings and waits for startup checks, including an API/database check through the web proxy. It exits with an error if startup does not finish within 180 seconds after the build. Start Docker Desktop first. Re-running setup preserves configured credentials, comments, and custom settings; it fills missing or placeholder settings, including storage settings in older files.
+
+The active Relay stack reads **`.env.platform`**, not `.env` (which belongs to the separate identity-service configuration). Database, storage, and internal credentials are generated locally; `AI_API_KEY` requires your own provider key and may stay empty for source-preview mode. Keep both environment files private. This stack binds to localhost; public hosting, a domain, TLS, and production services require a separate deployment environment. See the [deployment limits](docs-platform.md#deployment-limits) before exposing it publicly.
+
 ## Run locally
 
 Requires Node.js 24+, npm and Docker.
@@ -61,6 +65,7 @@ See [architecture, API and operational limits](docs-platform.md) and [local infr
 ## Verify
 
 ```sh
+npm run test:setup
 npm run check-types --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
 npm run lint --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
 npm run build --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker

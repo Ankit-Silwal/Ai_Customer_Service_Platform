@@ -14,6 +14,7 @@ on:
       - "*platform*"
       - "Dockerfile.*"
       - "deploy/**"
+      - "scripts/setup-platform*"
       - ".github/workflows/platform.yml"
   pull_request:
     paths:
@@ -23,6 +24,7 @@ on:
       - "*platform*"
       - "Dockerfile.*"
       - "deploy/**"
+      - "scripts/setup-platform*"
       - ".github/workflows/platform.yml"
 permissions:
   contents: read
@@ -46,7 +48,9 @@ jobs:
           npm run lint --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
           npm run check-types --workspace @relay/web --workspace @relay/api --workspace @relay/knowledge --workspace @relay/worker --workspace @relay/server --workspace @relay/contracts --workspace @repo/ui
       - name: Unit tests
-        run: npm run test --workspace @relay/server
+        run: |
+          npm run test:setup
+          npm run test --workspace @relay/server
       - name: Build and start all services
         run: |
           npm run platform:setup

@@ -8,9 +8,10 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "platform:setup": "node scripts/setup-platform.mjs",
+    "test:setup": "node --test scripts/setup-platform.test.mjs",
     "platform:infra": "docker compose --env-file .env.platform -f compose.infra.yml up -d",
     "dev:platform": "node scripts/dev-platform.mjs",
-    "platform:up": "docker compose --env-file .env.platform -f compose.platform.yml up --build -d",
+    "platform:up": "node scripts/setup-platform.mjs && docker compose --env-file .env.platform -f compose.platform.yml up --build -d --wait --wait-timeout 180",
     "platform:down": "docker compose --env-file .env.platform -f compose.platform.yml down"
   },
   "devDependencies": {
